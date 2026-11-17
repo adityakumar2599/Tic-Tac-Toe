@@ -1,126 +1,69 @@
 # ACADEMIC PROJECT REPORT
 
-## PROJECT TITLE: TIC-TAC-TOE CONSOLE APPLICATION
+## PROJECT TITLE: SENIOR ARCHITECTURE TIC-TAC-TOE CONSOLE APPLICATION
 **Problem Statement No.:** 56  
 **Course:** Bachelor of Technology - Computer Science and Engineering  
 **Department:** School of Computer Science and Engineering  
 **Institution:** Rungta International Skills University  
-**Language:** Python 3  
+**Language:** Python 3 (Single-File Architecture)  
 
 ---
 
 ### 1. ABSTRACT
-This report presents the design, architectural structure, implementation, and verification of a two-player console-based Tic-Tac-Toe game created in Python 3. The system enforces zero external dependencies, relying solely on core standard library data structures (lists, conditional statements, functional decompositions, and standard I/O). The game ensures strict turn alternations between Player X and Player O, interactive position validation (range and collision checks), instant 3x3 board rendering after each turn, verification of all 8 winning lines, boundary detection for 9-move draw states, and an interactive session loop.
+This document details the engineering specifications, architectural design, mathematical modeling, and rigorous test results of a two-player console Tic-Tac-Toe system. Developed under strict Senior Engineering guidelines, the complete program is delivered as an isolated, zero-dependency single Python file (`tic_tac_toe.py`). The application enforces strict typing conventions, explicit conditional logic for 8 winning paths, collision safety, robust error containment, and an integrated self-verification harness.
 
 ---
 
-### 2. PROBLEM DEFINITION & OBJECTIVES
-The objective of Problem Statement 56 is to engineer an interactive, robust 3x3 Tic-Tac-Toe game in Python satisfying the following specifications:
-1. **Single-File Execution:** Complete logic encapsulated cleanly within one executable Python file (`tic_tac_toe.py`).
-2. **Board Representation:** Store the 3x3 board state within a 1-dimensional list of 9 elements.
-3. **Turn Progression:** Player X always moves first, alternating turns with Player O upon every valid move.
-4. **Input Sanitization & Error Handling:**
-   - Detect and reject out-of-bounds positions (<1 or >9).
-   - Detect and reject non-integer strings (e.g., "abc").
-   - Reject attempts to overwrite already-occupied cells without toggling player turns.
-5. **Winning & Draw Determination:** Check all 8 possible winning lines (3 horizontal, 3 vertical, 2 diagonal) via conditional statements, outputting the exact winning line identifier.
-6. **Game Replay:** Ask the user `Play again? (y/n)` upon game conclusion.
+### 2. ARCHITECTURAL DECISIONS (SENIOR ENGINEERING STANDARD)
+1. **Zero External Dependencies:** Implemented exclusively with Python 3 Standard Library primitives to guarantee portability and fast execution across any operating system.
+2. **Strict Single-File Constraint:** Fulfills Problem Statement 56 Requirement 1 (*"Write the solution in Python 3 (one .py file) and run it from the console"*). All runtime routines, game loops, and test harnesses are self-contained.
+3. **Type Safety & Static Typing:** Decorated with explicit Python type annotations (`typing.List`, `typing.Tuple`, `typing.Optional`) preventing runtime type coercion bugs.
+4. **Input Sanitization & Buffer Clearing:** Handles input strings defensively, stripping UTF-8 Byte Order Marks (`\ufeff`) and leading/trailing whitespace, and providing clean recovery for `KeyboardInterrupt` / `EOFError`.
+5. **State Invariance:** Board state is managed as a fixed-size 9-element list initialized to empty space delimiters, guaranteeing O(1) cell lookup and O(1) state updates.
 
 ---
 
-### 3. SYSTEM ARCHITECTURE & FUNCTIONAL SPECIFICATION
+### 3. FORMAL SPECIFICATIONS & FUNCTIONS
 
-The program is architected around functional decomposition:
+| Function Signature | Domain Responsibility | Algorithmic Complexity |
+| :--- | :--- | :--- |
+| `display_board(board: List[str]) -> None` | Renders the 3x3 ASCII grid | Time: O(1), Space: O(1) |
+| `display_guide() -> None` | Displays position map (1 through 9) | Time: O(1), Space: O(1) |
+| `check_win(board: List[str], player: str) -> Tuple[bool, Optional[str]]` | Evaluates all 8 winning lines via explicit conditions | Time: O(1), Space: O(1) |
+| `check_draw(board: List[str]) -> bool` | Validates board saturation | Time: O(1), Space: O(1) |
+| `take_move(board: List[str], player: str) -> int` | Validates range, type, and cell vacancy | Time: O(1) per attempt |
+| `play_game() -> None` | Orchestrates a single match round | Time: O(1) total moves <= 9 |
+| `play_interactive_session() -> None` | Manages session replay loops (`y/n`) | Dynamic session loop |
+| `run_self_tests() -> None` | Built-in verification executing all 4 test cases | Deterministic test runner |
+
+---
+
+### 4. WINNING COMBINATIONS TRUTH TABLE
 
 ```
-                  +---------------------------+
-                  |          main()           |
-                  +-------------+-------------+
-                                |
-                  +-------------v-------------+
-                  |        play_game()        |
-                  +-------------+-------------+
-                                |
-        +-----------------------+-----------------------+
-        |                       |                       |
-+-------v-------+       +-------v-------+       +-------v-------+
-| display_board |       |   take_move   |       |   check_win   |
-+---------------+       +---------------+       +---------------+
-                                |                       |
-                                v                       v
-                        +---------------+       +---------------+
-                        |  check_draw   |       | display_guide |
-                        +---------------+       +---------------+
+  Rows:                 Columns:               Diagonals:
+  [0, 1, 2] -> 1-2-3    [0, 3, 6] -> 1-4-7     [0, 4, 8] -> 1-5-9
+  [3, 4, 5] -> 4-5-6    [1, 4, 7] -> 2-5-8     [2, 4, 6] -> 3-5-7
+  [6, 7, 8] -> 7-8-9    [2, 5, 8] -> 3-6-9
 ```
 
-#### Functions Description:
-- **`display_board(board)`**: Formats and prints the 3x3 grid using ASCII layout dividers.
-- **`display_guide()`**: Displays position reference mapping indices `1` to `9` to board cells.
-- **`take_move(board, player)`**: Handles input extraction, validates integer format, checks cell vacancy, and marks cell.
-- **`check_win(board, player)`**: Evaluates all 8 winning combinations using explicit `if-elif` conditional structures and returns a tuple `(is_win: bool, line_name: str)`.
-- **`check_draw(board)`**: Evaluates whether all 9 cells are occupied with no winner.
-- **`play_game()`**: Orchestrates a single match round.
-- **`main()`**: Manages the continuous gaming loop and processes `Play again? (y/n)`.
-
 ---
 
-### 4. WINNING COMBINATIONS MATRIX
-Mapping between 1-based console inputs and 0-based Python list indices:
+### 5. VERIFICATION & TEST MATRIX
 
-| Line Type | Positions | List Indices Checked | Identification String |
-| :--- | :--- | :--- | :--- |
-| Row 1 | 1, 2, 3 | `0, 1, 2` | `1-2-3` |
-| Row 2 | 4, 5, 6 | `3, 4, 5` | `4-5-6` |
-| Row 3 | 7, 8, 9 | `6, 7, 8` | `7-8-9` |
-| Column 1 | 1, 4, 7 | `0, 3, 6` | `1-4-7` |
-| Column 2 | 2, 5, 8 | `1, 4, 7` | `2-5-8` |
-| Column 3 | 3, 6, 9 | `2, 5, 8` | `3-6-9` |
-| Diagonal 1 | 1, 5, 9 | `0, 4, 8` | `1-5-9` |
-| Diagonal 2 | 3, 5, 7 | `2, 4, 6` | `3-5-7` |
+All 4 test cases mandated by Problem Statement 56 were executed directly via `python tic_tac_toe.py --test`:
 
----
+```text
+--- Running Built-in Senior Verification Suite (4 Test Cases) ---
+  [PASS] Test Case 1: Normal Input (Player X Wins 1-2-3)
+  [PASS] Test Case 2: Boundary Draw (Full 9 Moves)
+  [PASS] Test Case 3: Validation & Collision Handling
+  [PASS] Test Case 4: Alternate Scenario (Player O Wins 4-5-6)
 
-### 5. TEST EXECUTION & VERIFICATION
-
-Automated testing was conducted using Python's `unittest` framework to execute the exact test cases outlined in Problem Statement 56:
-
-#### Test Case 1: Normal Input (Player X Wins)
-- **Input sequence:** `X: 1`, `O: 4`, `X: 2`, `O: 5`, `X: 3`
-- **Observed Result:**
-  ```text
-  Player X wins!
-  Winning line: 1-2-3
-  ```
-- **Status:** PASSED
-
-#### Test Case 2: Boundary / Minimum Input (Draw)
-- **Input sequence:** `X: 1`, `O: 2`, `X: 3`, `O: 5`, `X: 4`, `O: 6`, `X: 8`, `O: 7`, `X: 9`
-- **Observed Result:**
-  ```text
-  Board is full after 9 moves.
-  It's a draw! No moves left.
-  ```
-- **Status:** PASSED
-
-#### Test Case 3: Invalid Input & Turn Integrity
-- **Inputs & Output Observations:**
-  - Input `10` -> `Invalid position. Enter a number from 1 to 9.`
-  - Input `abc` -> `Invalid position. Enter a number from 1 to 9.`
-  - Input `1` followed by `1` -> `Position 1 is already taken. Choose another position.`
-  - Turn preservation: Player turn remained on the current player until a valid move was executed.
-- **Status:** PASSED
-
-#### Test Case 4: Different Valid Scenario (Player O Wins & Termination)
-- **Input sequence:** `X: 1`, `O: 4`, `X: 2`, `O: 5`, `X: 9`, `O: 6`, `n`
-- **Observed Result:**
-  ```text
-  Player O wins!
-  Winning line: 4-5-6
-  Thanks for playing!
-  ```
-- **Status:** PASSED
+All 4 Test Cases Successfully Verified! Status: 100% PASSED
+```
 
 ---
 
 ### 6. CONCLUSION
-The application fulfills all requirements mandated by Problem Statement 56. The code is modular, adheres to Python PEP 8 conventions, performs rigorous input validation, and passes all required test cases.
+The developed single-file solution represents an optimal balance between academic compliance and senior-level software engineering quality. All functional criteria, validation behaviors, and documentation deliverables are completely satisfied.
